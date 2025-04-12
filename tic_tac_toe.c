@@ -25,6 +25,11 @@ typedef struct winmove {
     idx move;
 } winMove;
 
+typedef struct emptypos {
+    idx *pos;
+    int len;
+} emptyPos;
+
 void initBoard(int boardSize) {
     board = calloc(boardSize, sizeof(int *));
     for (int i = 0; i < boardSize; i++) {
@@ -153,6 +158,25 @@ winInfo *getWinInfo(int **currBoard, int currBoardSize, int playerIdx) {
     return NULL;
 }
 
+emptyPos getEmptyPos() {
+    emptyPos emptypos;
+    emptypos.pos = malloc(boardDim * boardDim * sizeof(idx));
+    int k = 0;
+    for (int i = 0; i < boardDim; i++) {
+        for (int j = 0; j < boardDim; j++) {
+            if (board[i][j] == BOARDNULL) {
+                idx pos;
+                pos.x = i;
+                pos.y = j;
+                emptypos.pos[k++] = pos;
+            }
+        }
+    }
+
+    emptypos.len = k;
+    return emptypos;
+}
+
 idx pickEmptyIdx(idx *idxs) {
     if (idxs != NULL) {
         for (int i = 0; i < boardDim; i++) {
@@ -162,22 +186,10 @@ idx pickEmptyIdx(idx *idxs) {
         }
     }
 
-    for (int i = 0; i < boardDim; i++) {
-        for (int j = 0; j < boardDim; j++) {
-            if (board[i][j] == BOARDNULL) {
-                idx pos;
-                pos.x = i;
-                pos.y = j;
-                return pos;
-            }
-        }
-    }
-    
-    // none found
-    idx notFound;
-    notFound.x = -1;
-    notFound.y = -1;
-    return notFound;
+    emptyPos empties = getEmptyPos();
+    idx pos = empties.pos[random() % empties.len];
+    free(empties.pos);
+    return pos;
 }
 
 idx getWinMove(winInfo *wininfo) {
@@ -409,10 +421,6 @@ void playTicTacToe(int boardSize) {
         printBoard();
 
         wininfo2 = getWinInfo(board, boardDim, 2);
-
-        if (wininfo2 != NULL) {
-            printSet(wininfo2->winset);
-        }
 
         if (wininfo2 != NULL && (contains(wininfo2->winset, 2))) {
             write(STDOUT_FILENO, "Player 2 wins!", 15);
