@@ -236,7 +236,7 @@ void destroyMatrix(int **matrix, int size) {
 
 winMove oneMoveFromWin(int playerIdx) {
     Set *wins = createSet(3);
-    idx *pos = calloc(4, sizeof(idx));
+    idx *pos = calloc(7, sizeof(idx));
 
     int posPos = 0;
 
@@ -340,8 +340,86 @@ winMove oneMoveFromWin(int playerIdx) {
     }
     destroyMatrix(subMat4, boardDim - 1);
 
+    int **subMat5 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat5[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    // populate sub matrix
+    k = 0, h = 0;
+    for (int i = 0; i < boardDim; i+=2) {
+        h = 0;
+        for (int j = 0; j < boardDim - 1; j++) {
+            subMat5[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo5 = getWinInfo(subMat5, boardDim - 1, playerIdx);
+    if (wininfo5 != NULL) wins = setUnion(wins, wininfo5->winset);
+    pos[posPos++] = getWinMove(wininfo5);
+
+    if (wininfo5 != NULL) {
+        freeSet(wininfo5->winset);
+        free(wininfo5);
+    }
+    destroyMatrix(subMat5, boardDim - 1);
+
+    int **subMat6 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat6[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    k = 0, h = 0;
+    // populate sub matrix
+    for (int i = 0; i < boardDim; i+=2) {
+        h = 0;
+        for (int j = 1; j < boardDim; j++) {
+            subMat6[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo6 = getWinInfo(subMat6, boardDim - 1, playerIdx);
+    if (wininfo6 != NULL) wins = setUnion(wins, wininfo6->winset);
+    pos[posPos++] = getWinMove(wininfo6);
+
+    if (wininfo6 != NULL) {
+        freeSet(wininfo6->winset);
+        free(wininfo6);
+    }
+    destroyMatrix(subMat6, boardDim - 1);
+
+    int **subMat7 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat7[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    k = 0, h = 0;
+    // populate sub matrix
+    for (int i = 0; i < boardDim; i+=2) {
+        h = 0;
+        for (int j = 0; j < boardDim; j+=2) {
+            subMat7[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo7 = getWinInfo(subMat7, boardDim - 1, playerIdx);
+    if (wininfo7 != NULL) wins = setUnion(wins, wininfo7->winset);
+    pos[posPos++] = getWinMove(wininfo7);
+
+    if (wininfo7 != NULL) {
+        freeSet(wininfo7->winset);
+        free(wininfo7);
+    }
+    destroyMatrix(subMat7, boardDim - 1);
+
     winMove winningMove;
-    for (int i = 0; i < 4; i++) {
+    for (int i = 0; i < 7; i++) {
         if (pos[i].x != -1 && pos[i].y != -1) {
             winningMove.move = pos[i];
         }
