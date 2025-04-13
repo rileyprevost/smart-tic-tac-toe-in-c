@@ -239,77 +239,193 @@ void destroyMatrix(int **matrix, int size) {
     free(matrix);
 }
 
-void oneMoveFromWinHelper(int playerIdx, winInfo *wininfo, Set *winset, idxNode *headWinPos, 
-                            int starti, int endi, int stepi, int startj, int endj, int stepj) {
-    int **subMat = calloc((boardDim - 1), sizeof(int *));
+winMove oneMoveFromWin(int playerIdx) {
+    Set *wins = createSet(3);
+    idx *pos = calloc(7, sizeof(idx));
+    int posPos = 0;
+
+    int **subMat1 = calloc((boardDim - 1), sizeof(int *));
     for (int i = 0; i < boardDim - 1; i++) {
-        subMat[i] = calloc((boardDim - 1), sizeof(int));
+        subMat1[i] = calloc((boardDim - 1), sizeof(int));
     }
 
     // populate sub matrix
     int k = 0, h = 0;
-    for (int i = starti; i < endi; i+=stepi) {
+    for (int i = 1; i < boardDim; i++) {
         h = 0;
-        for (int j = startj; j < endj; j+=stepj) {
-            subMat[k][h] = board[i][j];
+        for (int j = 1; j < boardDim; j++) {
+            subMat1[k][h] = board[i][j];
             h++;
         }
         k++;
     }
 
-    wininfo = getWinInfo(subMat, boardDim - 1, playerIdx);
-    if (wininfo != NULL) winset = setUnion(winset, wininfo->winset);
-
-    if (headWinPos == NULL) {
-        headWinPos = malloc(sizeof(idxNode));
-        idx pos = getWinMove(wininfo);
-        headWinPos->next = NULL;
-        headWinPos->data.x = pos.x;
-        headWinPos->data.y = pos.y;
-    } else {
-        idxNode *temp = headWinPos;
-        while(temp->next != NULL) {
-            temp = temp->next;
-        }
-
-        temp->next = malloc(sizeof(idxNode));
-        idx pos = getWinMove(wininfo);
-        temp->next->data.x = pos.x;
-        temp->next->data.y = pos.y;
-    }
+    winInfo *wininfo1 = getWinInfo(subMat1, boardDim - 1, playerIdx);
+    if (wininfo1 != NULL) wins = setUnion(wins, wininfo1->winset);
+    pos[posPos++] = getWinMove(wininfo1);
     
-    if (wininfo != NULL) {
-        freeSet(wininfo->winset);
-        free(wininfo);
+    if (wininfo1 != NULL) {
+        freeSet(wininfo1->winset);
+        free(wininfo1);
     }
-    destroyMatrix(subMat, boardDim - 1);
-}
+    destroyMatrix(subMat1, boardDim - 1);
 
-winMove oneMoveFromWin(int playerIdx) {
-    Set *wins = createSet(3);
-    winInfo *wininfo = malloc(sizeof(winInfo));
-    idxNode *head = NULL;
+    int **subMat2 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat2[i] = malloc((boardDim - 1) * sizeof(int));
+    }
 
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 1, boardDim, 1, 
-                        1, boardDim, 1);
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 0, boardDim - 1, 1,
-                        0, boardDim - 1, 1);
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 1, boardDim, 1,
-                        0, boardDim - 1, 1);
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 0, boardDim - 1, 1,
-                        1, boardDim, 1);
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 0, boardDim, 2,
-                        0, boardDim - 1, 1);
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 0, boardDim, 2,
-                        1, boardDim, 1);
-    oneMoveFromWinHelper(playerIdx, wininfo, wins, head, 0, boardDim, 2,
-                        0, boardDim, 2);
+    // populate sub matrix
+    for (int i = 0; i < boardDim - 1; i++) {
+        for (int j = 0; j < boardDim - 1; j++) {
+            subMat2[i][j] = board[i][j];
+        }
+    }
+
+    winInfo *wininfo2 = getWinInfo(subMat2, boardDim - 1, playerIdx);
+    if (wininfo2 != NULL) wins = setUnion(wins, wininfo2->winset);
+    pos[posPos++] = getWinMove(wininfo2);
+
+    if (wininfo2 != NULL) {
+        freeSet(wininfo2->winset);
+        free(wininfo2);
+    }
+    destroyMatrix(subMat2, boardDim - 1);
+
+    int **subMat3 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat3[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    // populate sub matrix
+    k = 0, h = 0;
+    for (int i = 1; i < boardDim; i++) {
+        h = 0;
+        for (int j = 0; j < boardDim - 1; j++) {
+            subMat3[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo3 = getWinInfo(subMat3, boardDim - 1, playerIdx);
+    if (wininfo3 != NULL) wins = setUnion(wins, wininfo3->winset);
+    pos[posPos++] = getWinMove(wininfo3);
+
+    if (wininfo3 != NULL) {
+        freeSet(wininfo3->winset);
+        free(wininfo3);
+    }
+    destroyMatrix(subMat3, boardDim - 1);
+
+    int **subMat4 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat4[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    // populate sub matrix
+    k = 0, h = 0;
+    for (int i = 0; i < boardDim - 1; i++) {
+        h = 0;
+        for (int j = 1; j < boardDim; j++) {
+            subMat4[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo4 = getWinInfo(subMat4, boardDim - 1, playerIdx);
+    if (wininfo4 != NULL) wins = setUnion(wins, wininfo4->winset);
+    pos[posPos++] = getWinMove(wininfo4);
+
+    if (wininfo4 != NULL) {
+        freeSet(wininfo4->winset);
+        free(wininfo4);
+    }
+    destroyMatrix(subMat4, boardDim - 1);
+
+    int **subMat5 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat5[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    // populate sub matrix
+    k = 0, h = 0;
+    for (int i = 0; i < boardDim; i+=2) {
+        h = 0;
+        for (int j = 0; j < boardDim - 1; j++) {
+            subMat5[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo5 = getWinInfo(subMat5, boardDim - 1, playerIdx);
+    if (wininfo5 != NULL) wins = setUnion(wins, wininfo5->winset);
+    pos[posPos++] = getWinMove(wininfo5);
+
+    if (wininfo5 != NULL) {
+        freeSet(wininfo5->winset);
+        free(wininfo5);
+    }
+    destroyMatrix(subMat5, boardDim - 1);
+
+    int **subMat6 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat6[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    k = 0, h = 0;
+    // populate sub matrix
+    for (int i = 0; i < boardDim; i+=2) {
+        h = 0;
+        for (int j = 1; j < boardDim; j++) {
+            subMat6[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo6 = getWinInfo(subMat6, boardDim - 1, playerIdx);
+    if (wininfo6 != NULL) wins = setUnion(wins, wininfo6->winset);
+    pos[posPos++] = getWinMove(wininfo6);
+
+    if (wininfo6 != NULL) {
+        freeSet(wininfo6->winset);
+        free(wininfo6);
+    }
+    destroyMatrix(subMat6, boardDim - 1);
+
+    int **subMat7 = malloc((boardDim - 1) * sizeof(int *));
+    for (int i = 0; i < boardDim - 1; i++) {
+        subMat7[i] = malloc((boardDim - 1) * sizeof(int));
+    }
+
+    k = 0, h = 0;
+    // populate sub matrix
+    for (int i = 0; i < boardDim; i+=2) {
+        h = 0;
+        for (int j = 0; j < boardDim; j+=2) {
+            subMat7[k][h] = board[i][j];
+            h++;
+        }
+        k++;
+    }
+
+    winInfo *wininfo7 = getWinInfo(subMat7, boardDim - 1, playerIdx);
+    if (wininfo7 != NULL) wins = setUnion(wins, wininfo7->winset);
+    pos[posPos++] = getWinMove(wininfo7);
+
+    if (wininfo7 != NULL) {
+        freeSet(wininfo7->winset);
+        free(wininfo7);
+    }
+    destroyMatrix(subMat7, boardDim - 1);
 
     winMove winningMove;
-    idxNode *temp = head;
-    while (temp != NULL) {
-        if (temp->data.x != -1 && temp->data.y != -1) {
-            winningMove.move = temp->data;
+    for (int i = 0; i < 7; i++) {
+        if (pos[i].x != -1 && pos[i].y != -1) {
+            winningMove.move = pos[i];
         }
     }
 
