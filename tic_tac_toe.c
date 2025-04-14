@@ -1,5 +1,4 @@
-#include <fcntl.h>
-#include <unistd.h>
+#include <time.h>
 #include "set.h"
 
 #define BUFSIZE 128
@@ -80,7 +79,7 @@ void getApplyInput(int playerIdx) {
         tuple = getPosition(playerIdx);
 
         if (board[tuple->x][tuple->y] != BOARDNULL) {
-            write(STDOUT_FILENO, "Invalid input given, position already taken", 43);
+            write(STDOUT_FILENO, "Invalid input given, position already taken\n", 44);
             continue;
         }
 
@@ -182,7 +181,7 @@ emptyPos getEmptyPos() {
     return emptypos;
 }
 
-idx pickEmptyIdx(idx *idxs) {
+idx pickEmptyIdx(idx *idxs, int pickBoardEmpty) {
     if (idxs != NULL) {
         for (int i = 0; i < boardDim; i++) {
             if (board[idxs[i].x][idxs[i].y] == BOARDNULL) {
@@ -191,18 +190,20 @@ idx pickEmptyIdx(idx *idxs) {
         }
     }
 
-    emptyPos empties = getEmptyPos();
-    idx pos = empties.pos[random() % empties.len];
-    free(empties.pos);
+    if (pickBoardEmpty) {
+        emptyPos empties = getEmptyPos();
+        idx pos = empties.pos[rand() % empties.len];
+        free(empties.pos);
+        return pos;
+    }
+
+    idx pos;
+    pos.x = -1;
+    pos.y = -1;
     return pos;
 }
 
 idx getWinMove(winInfo *wininfo) {
-    if (wininfo == NULL) {
-        idx pos = pickEmptyIdx(NULL);
-        return pos;
-    }
-
     idx *posWinMoves = malloc(boardDim * sizeof(idx));
 
     if (wininfo->type == ROW) {
@@ -227,7 +228,7 @@ idx getWinMove(winInfo *wininfo) {
         }
     }
 
-    idx emptyPos = pickEmptyIdx(posWinMoves);
+    idx emptyPos = pickEmptyIdx(posWinMoves, 0);
     free(posWinMoves);
     return emptyPos;
 }
@@ -243,6 +244,11 @@ winMove oneMoveFromWin(int playerIdx) {
     Set *wins = createSet(3);
     idx *pos = calloc(7, sizeof(idx));
     int posPos = 0;
+
+    for (int i = 0; i < 7; i++) {
+        pos[i].x = -1;
+        pos[i].y = -1;
+    }
 
     int **subMat1 = calloc((boardDim - 1), sizeof(int *));
     for (int i = 0; i < boardDim - 1; i++) {
@@ -261,10 +267,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo1 = getWinInfo(subMat1, boardDim - 1, playerIdx);
-    if (wininfo1 != NULL) wins = setUnion(wins, wininfo1->winset);
-    pos[posPos++] = getWinMove(wininfo1);
-    
     if (wininfo1 != NULL) {
+        wins = setUnion(wins, wininfo1->winset);
+        pos[posPos++] = getWinMove(wininfo1);
+        
         freeSet(wininfo1->winset);
         free(wininfo1);
     }
@@ -283,10 +289,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo2 = getWinInfo(subMat2, boardDim - 1, playerIdx);
-    if (wininfo2 != NULL) wins = setUnion(wins, wininfo2->winset);
-    pos[posPos++] = getWinMove(wininfo2);
-
     if (wininfo2 != NULL) {
+        wins = setUnion(wins, wininfo2->winset);
+        pos[posPos++] = getWinMove(wininfo2);
+
         freeSet(wininfo2->winset);
         free(wininfo2);
     }
@@ -309,10 +315,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo3 = getWinInfo(subMat3, boardDim - 1, playerIdx);
-    if (wininfo3 != NULL) wins = setUnion(wins, wininfo3->winset);
-    pos[posPos++] = getWinMove(wininfo3);
-
     if (wininfo3 != NULL) {
+        wins = setUnion(wins, wininfo3->winset);
+        pos[posPos++] = getWinMove(wininfo3);
+
         freeSet(wininfo3->winset);
         free(wininfo3);
     }
@@ -335,10 +341,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo4 = getWinInfo(subMat4, boardDim - 1, playerIdx);
-    if (wininfo4 != NULL) wins = setUnion(wins, wininfo4->winset);
-    pos[posPos++] = getWinMove(wininfo4);
-
     if (wininfo4 != NULL) {
+        wins = setUnion(wins, wininfo4->winset);
+        pos[posPos++] = getWinMove(wininfo4);
+
         freeSet(wininfo4->winset);
         free(wininfo4);
     }
@@ -361,10 +367,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo5 = getWinInfo(subMat5, boardDim - 1, playerIdx);
-    if (wininfo5 != NULL) wins = setUnion(wins, wininfo5->winset);
-    pos[posPos++] = getWinMove(wininfo5);
-
     if (wininfo5 != NULL) {
+        wins = setUnion(wins, wininfo5->winset);
+        pos[posPos++] = getWinMove(wininfo5);
+
         freeSet(wininfo5->winset);
         free(wininfo5);
     }
@@ -387,10 +393,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo6 = getWinInfo(subMat6, boardDim - 1, playerIdx);
-    if (wininfo6 != NULL) wins = setUnion(wins, wininfo6->winset);
-    pos[posPos++] = getWinMove(wininfo6);
-
     if (wininfo6 != NULL) {
+        wins = setUnion(wins, wininfo6->winset);
+        pos[posPos++] = getWinMove(wininfo6);
+
         freeSet(wininfo6->winset);
         free(wininfo6);
     }
@@ -413,10 +419,10 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo7 = getWinInfo(subMat7, boardDim - 1, playerIdx);
-    if (wininfo7 != NULL) wins = setUnion(wins, wininfo7->winset);
-    pos[posPos++] = getWinMove(wininfo7);
-
     if (wininfo7 != NULL) {
+        wins = setUnion(wins, wininfo7->winset);
+        pos[posPos++] = getWinMove(wininfo7);
+
         freeSet(wininfo7->winset);
         free(wininfo7);
     }
@@ -444,7 +450,7 @@ idx findDecentMove(int playerIdx) {
     if (winningMove.win) {
         return winningMove.move;
     } else {
-        return pickEmptyIdx(NULL);
+        return pickEmptyIdx(NULL, 1);
     }
 }
 
@@ -468,15 +474,23 @@ void playTicTacToe(int boardSize) {
     while (1) {
         write(STDOUT_FILENO, "Computer (Player 1) makes move:\n", 32);
 
+        winMove compwinmove = oneMoveFromWin(1);
         winMove oppwinmove = oneMoveFromWin(2);
         idx pos;
-        if (oppwinmove.win) {
+        if (compwinmove.win) {
+            pos = compwinmove.move;
+        } else if (oppwinmove.win) {
             pos = oppwinmove.move;
         } else {
             pos = findDecentMove(1);
         }
 
-        board[pos.x][pos.y] = 1;
+        if (board[pos.x][pos.y] == BOARDNULL)
+            board[pos.x][pos.y] = 1;
+        else {
+            pos = pickEmptyIdx(NULL, 1);
+            board[pos.x][pos.y] = 1;
+        }
 
         printBoard();
 
@@ -524,6 +538,7 @@ void playTicTacToe(int boardSize) {
 }
 
 int main(int argc, char **argv) {
+    srand(time(0));
     playTicTacToe(3);
     for (int i = 0; i < boardDim; i++) {
         free(board[i]);

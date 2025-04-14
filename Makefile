@@ -11,7 +11,7 @@ OBJS = $(SRCS:.c=.o)
 CC = gcc
 
 # Compiler flags
-CFLAGS = -g -O0 -Wall -fsanitize=address,undefined -pthread
+CFLAGS = -g -O0 -Wall -fsanitize=address,undefined
 
 # Default rule
 all: $(TARGET)
