@@ -147,7 +147,6 @@ winInfo *getWinInfo(int **currBoard, int currBoardSize, int playerIdx) {
     removeValue(winset, 1);
     removeValue(winset, 2);
 
-    // hard part check for other diagonal win
     for (int i = 0; i < currBoardSize; i++) {
         add(winset, currBoard[i][currBoardSize - 1 - i]);
     }
@@ -275,12 +274,15 @@ winMove oneMoveFromWin(int playerIdx) {
         free(wininfo1);
         wininfo1 = NULL;
     } else if (wininfo1 != NULL) {
+        // account for mismatching indicies in 2x2 and 3x3 boards
+        if (wininfo1->type == COL || wininfo1->type == ROW) {
+            wininfo1->index += 1;
+        }
+
         wins = setUnion(wins, wininfo1->winset);
-        pos[posPos++] = getWinMove(wininfo1);
-        
-        freeSet(wininfo1->winset);
-        free(wininfo1);
+        pos[posPos] = getWinMove(wininfo1);
     }
+    posPos++;
     destroyMatrix(subMat1, boardDim - 1);
 
     int **subMat2 = malloc((boardDim - 1) * sizeof(int *));
@@ -305,11 +307,9 @@ winMove oneMoveFromWin(int playerIdx) {
         wininfo2 = NULL;
     } else if (wininfo2 != NULL) {
         wins = setUnion(wins, wininfo2->winset);
-        pos[posPos++] = getWinMove(wininfo2);
-
-        freeSet(wininfo2->winset);
-        free(wininfo2);
+        pos[posPos] = getWinMove(wininfo2);
     }
+    posPos++;
     destroyMatrix(subMat2, boardDim - 1);
 
     int **subMat3 = malloc((boardDim - 1) * sizeof(int *));
@@ -337,12 +337,14 @@ winMove oneMoveFromWin(int playerIdx) {
         free(wininfo3);
         wininfo3 = NULL;
     } else if (wininfo3 != NULL) {
-        wins = setUnion(wins, wininfo3->winset);
-        pos[posPos++] = getWinMove(wininfo3);
+        if (wininfo3->type == ROW) {
+            wininfo3->index += 1;
+        }
 
-        freeSet(wininfo3->winset);
-        free(wininfo3);
+        wins = setUnion(wins, wininfo3->winset);
+        pos[posPos] = getWinMove(wininfo3);
     }
+    posPos++;
     destroyMatrix(subMat3, boardDim - 1);
 
     int **subMat4 = malloc((boardDim - 1) * sizeof(int *));
@@ -370,12 +372,14 @@ winMove oneMoveFromWin(int playerIdx) {
         free(wininfo4);
         wininfo4 = NULL;
     } else if (wininfo4 != NULL) {
-        wins = setUnion(wins, wininfo4->winset);
-        pos[posPos++] = getWinMove(wininfo4);
+        if (wininfo4->type == COL) {
+            wininfo4->index += 1;
+        }
 
-        freeSet(wininfo4->winset);
-        free(wininfo4);
+        wins = setUnion(wins, wininfo4->winset);
+        pos[posPos] = getWinMove(wininfo4);
     }
+    posPos++;
     destroyMatrix(subMat4, boardDim - 1);
 
     int **subMat5 = malloc((boardDim - 1) * sizeof(int *));
@@ -403,12 +407,14 @@ winMove oneMoveFromWin(int playerIdx) {
         free(wininfo5);
         wininfo5 = NULL;
     } else if (wininfo5 != NULL) {
-        wins = setUnion(wins, wininfo5->winset);
-        pos[posPos++] = getWinMove(wininfo5);
+        if (wininfo5->type == ROW && wininfo5->index == 1) {
+            wininfo5->index += 1;
+        }
 
-        freeSet(wininfo5->winset);
-        free(wininfo5);
+        wins = setUnion(wins, wininfo5->winset);
+        pos[posPos] = getWinMove(wininfo5);
     }
+    posPos++;
     destroyMatrix(subMat5, boardDim - 1);
 
     int **subMat6 = malloc((boardDim - 1) * sizeof(int *));
@@ -436,12 +442,14 @@ winMove oneMoveFromWin(int playerIdx) {
         free(wininfo6);
         wininfo6 = NULL;
     } else if (wininfo6 != NULL) {
-        wins = setUnion(wins, wininfo6->winset);
-        pos[posPos++] = getWinMove(wininfo6);
+        if ((wininfo6->type == ROW && wininfo6->index == 1) || wininfo6->type == COL) {
+            wininfo6->index += 1;
+        }
 
-        freeSet(wininfo6->winset);
-        free(wininfo6);
+        wins = setUnion(wins, wininfo6->winset);
+        pos[posPos] = getWinMove(wininfo6);
     }
+    posPos++;
     destroyMatrix(subMat6, boardDim - 1);
 
     int **subMat7 = malloc((boardDim - 1) * sizeof(int *));
@@ -463,22 +471,54 @@ winMove oneMoveFromWin(int playerIdx) {
 
     winInfo *wininfo7 = getWinInfo(subMat7, boardDim - 1, playerIdx);
     if (wininfo7 != NULL) {
-        wins = setUnion(wins, wininfo7->winset);
-        pos[posPos++] = getWinMove(wininfo7);
+        if ((wininfo7->type == ROW && wininfo7->index == 1) || (wininfo7->type == COL && wininfo7->index == 1)) {
+            wininfo7->index += 1;
+        }
 
-        freeSet(wininfo7->winset);
-        free(wininfo7);
+        wins = setUnion(wins, wininfo7->winset);
+        pos[posPos] = getWinMove(wininfo7);
     }
+    posPos++;
     destroyMatrix(subMat7, boardDim - 1);
 
     winMove winningMove;
-    for (int i = 0; i < 7; i++) {
+    for (int i = 0; i < posPos; i++) {
         if (pos[i].x != -1 && pos[i].y != -1) {
             winningMove.move = pos[i];
         }
     }
 
-    if (contains(wins, 1) || contains(wins, 2)) {
+    // free all allocated memory
+    if (wininfo1 != NULL) {
+        freeSet(wininfo1->winset);
+        free(wininfo1);
+    }
+    if (wininfo2 != NULL) {
+        freeSet(wininfo2->winset);
+        free(wininfo2);
+    }
+    if (wininfo3 != NULL) {
+        freeSet(wininfo3->winset);
+        free(wininfo3);
+    }
+    if (wininfo4 != NULL) {
+        freeSet(wininfo4->winset);
+        free(wininfo4);
+    }
+    if (wininfo5 != NULL) {
+        freeSet(wininfo5->winset);
+        free(wininfo5);
+    }
+    if (wininfo6 != NULL) {
+        freeSet(wininfo6->winset);
+        free(wininfo6);
+    }
+    if (wininfo7 != NULL) {
+        freeSet(wininfo7->winset);
+        free(wininfo7);
+    }
+
+    if (contains(wins, playerIdx)) {
         winningMove.win = 1;
         return winningMove;
     } else {
@@ -531,7 +571,8 @@ void playTicTacToe(int boardSize) {
         if (board[pos.x][pos.y] == BOARDNULL)
             board[pos.x][pos.y] = 1;
         else {
-            pos = pickEmptyIdx(NULL, 1);
+            if (oppwinmove.win && board[oppwinmove.move.x][oppwinmove.move.y] == BOARDNULL) pos = oppwinmove.move;
+            else pos = pickEmptyIdx(NULL, 1);
             board[pos.x][pos.y] = 1;
         }
 
