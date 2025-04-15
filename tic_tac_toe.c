@@ -256,6 +256,7 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     // populate sub matrix
+    // otherdiag doesn't constitute win
     int k = 0, h = 0;
     for (int i = 1; i < boardDim; i++) {
         h = 0;
@@ -267,7 +268,13 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo1 = getWinInfo(subMat1, boardDim - 1, playerIdx);
-    if (wininfo1 != NULL) {
+
+    // see line 259
+    if (wininfo1 != NULL && wininfo1->type == OTHERDIAG) {
+        freeSet(wininfo1->winset);
+        free(wininfo1);
+        wininfo1 = NULL;
+    } else if (wininfo1 != NULL) {
         wins = setUnion(wins, wininfo1->winset);
         pos[posPos++] = getWinMove(wininfo1);
         
@@ -282,6 +289,7 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     // populate sub matrix
+    // otherdiag doesn't constitute win
     for (int i = 0; i < boardDim - 1; i++) {
         for (int j = 0; j < boardDim - 1; j++) {
             subMat2[i][j] = board[i][j];
@@ -289,7 +297,13 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo2 = getWinInfo(subMat2, boardDim - 1, playerIdx);
-    if (wininfo2 != NULL) {
+
+    // see line 286
+    if (wininfo2 != NULL && wininfo2->type == OTHERDIAG) {
+        freeSet(wininfo2->winset);
+        free(wininfo2);
+        wininfo2 = NULL;
+    } else if (wininfo2 != NULL) {
         wins = setUnion(wins, wininfo2->winset);
         pos[posPos++] = getWinMove(wininfo2);
 
@@ -304,6 +318,7 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     // populate sub matrix
+    // maindiag doesn't constitute win
     k = 0, h = 0;
     for (int i = 1; i < boardDim; i++) {
         h = 0;
@@ -315,7 +330,13 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo3 = getWinInfo(subMat3, boardDim - 1, playerIdx);
-    if (wininfo3 != NULL) {
+
+    // see line 309
+    if (wininfo3 != NULL && wininfo3->type == MAINDIAG) {
+        freeSet(wininfo3->winset);
+        free(wininfo3);
+        wininfo3 = NULL;
+    } else if (wininfo3 != NULL) {
         wins = setUnion(wins, wininfo3->winset);
         pos[posPos++] = getWinMove(wininfo3);
 
@@ -330,6 +351,7 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     // populate sub matrix
+    // maindiag doesn't constitute win
     k = 0, h = 0;
     for (int i = 0; i < boardDim - 1; i++) {
         h = 0;
@@ -341,7 +363,13 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo4 = getWinInfo(subMat4, boardDim - 1, playerIdx);
-    if (wininfo4 != NULL) {
+
+    // see line 336
+    if (wininfo4 != NULL && wininfo4->type == MAINDIAG) {
+        freeSet(wininfo4->winset);
+        free(wininfo4);
+        wininfo4 = NULL;
+    } else if (wininfo4 != NULL) {
         wins = setUnion(wins, wininfo4->winset);
         pos[posPos++] = getWinMove(wininfo4);
 
@@ -356,6 +384,7 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     // populate sub matrix
+    // maindiag and otherdiag don't constitute wins
     k = 0, h = 0;
     for (int i = 0; i < boardDim; i+=2) {
         h = 0;
@@ -367,7 +396,13 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo5 = getWinInfo(subMat5, boardDim - 1, playerIdx);
-    if (wininfo5 != NULL) {
+
+    // see line 363
+    if (wininfo5 != NULL && (wininfo5->type == MAINDIAG || wininfo5->type == OTHERDIAG)) {
+        freeSet(wininfo5->winset);
+        free(wininfo5);
+        wininfo5 = NULL;
+    } else if (wininfo5 != NULL) {
         wins = setUnion(wins, wininfo5->winset);
         pos[posPos++] = getWinMove(wininfo5);
 
@@ -383,6 +418,7 @@ winMove oneMoveFromWin(int playerIdx) {
 
     k = 0, h = 0;
     // populate sub matrix
+    // maindiag and otherdiag don't constitute wins
     for (int i = 0; i < boardDim; i+=2) {
         h = 0;
         for (int j = 1; j < boardDim; j++) {
@@ -393,7 +429,13 @@ winMove oneMoveFromWin(int playerIdx) {
     }
 
     winInfo *wininfo6 = getWinInfo(subMat6, boardDim - 1, playerIdx);
-    if (wininfo6 != NULL) {
+
+    // see line 392
+    if (wininfo6 != NULL && (wininfo6->type == MAINDIAG || wininfo6->type == OTHERDIAG)) {
+        freeSet(wininfo6->winset);
+        free(wininfo6);
+        wininfo6 = NULL;
+    } else if (wininfo6 != NULL) {
         wins = setUnion(wins, wininfo6->winset);
         pos[posPos++] = getWinMove(wininfo6);
 
@@ -409,6 +451,7 @@ winMove oneMoveFromWin(int playerIdx) {
 
     k = 0, h = 0;
     // populate sub matrix
+    // everything constitutes a win
     for (int i = 0; i < boardDim; i+=2) {
         h = 0;
         for (int j = 0; j < boardDim; j+=2) {
